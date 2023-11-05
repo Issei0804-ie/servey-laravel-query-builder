@@ -1,27 +1,38 @@
-# A Laravel with MySQL template on Gitpod
+We access `localhost/example`, app submit queries that is below.
+```log
+[2023-11-05 06:27:24] local.DEBUG: 4.50 ms, SQL: insert into `query_builder_boot_examples` (`name`, `model_boot_saving`, `updated_at`, `created_at`) values ('test', 'wrote it!!', '2023-11-05 06:27:24', '2023-11-05 06:27:24');  
+[2023-11-05 06:27:24] local.DEBUG: 0.93 ms, SQL: insert into `query_builder_boot_examples` (`name`) values ('test');  
+[2023-11-05 06:27:24] local.DEBUG: 0.21 ms, SQL: select * from `query_builder_boot_examples`;  
+```
 
-This is a [Laravel with MySQL](https://laravel.com) template configured for ephemeral development environments on [Gitpod](https://www.gitpod.io/).
+With the assumption that QueryBuilderBootExampleModel overrides `boot()` method that is below.
+```php
+    protected static function boot()
+    {
+        parent::boot();
+        self::saving(function ($model) {
+            $model->model_boot_saving = 'wrote it!!';
+        });
+    }
+```
 
-## Next Steps
+That method injects a value to `model_boot_saving` column when saving a model.
 
-Click the button below to start a new development environment:
+In controller, executed code is below.
+```php
+    public function __invoke()
+    {
+        QueryBuilderBootExample::create([
+            'name' => 'test',
+        ]);
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/Issei0804-ie/template-php-laravel-mysql)
+        DB::table('query_builder_boot_examples')->insert([
+            'name' => 'test',
+        ]);
+        return response()->json([
+            'queryBuilderBootExample' => QueryBuilderBootExample::all(),
+        ]);
+    }
+```
 
-## Get Started With Your Own Project
-
-### A new project
-
-Click the above "Open in Gitpod" button to start a new workspace. Once you're ready to push your first code changes, Gitpod will guide you to fork this project so you own it.
-
-### An existing project
-
-To get started with Laravel with MySQL on Gitpod, add a [`.gitpod.yml`](./.gitpod.yml) file which contains the configuration to improve the developer experience on Gitpod. To learn more, please see the [Getting Started](https://www.gitpod.io/docs/getting-started) documentation.
-
-## Notes & caveats
-
-
-- This Laravel installation is with [Laravel Sail](https://laravel.com/docs/10.x/installation#choosing-your-sail-services).
-  - It is the most powerful, but the first boot takes a couple of minutes.
-  - This is because service images have to be pulled from Docker Hub and the base Sail container has to built.
-- If you're looking for a light alternative, consider using [Gitpod Sample for Laravel and SQLite](https://github.com/gitpod-samples/template-php-laravel-sqlite)
+From the above code and the log, we can see that `saving()` method is executed when instantiating the Model, but not when using QueryBuilder.

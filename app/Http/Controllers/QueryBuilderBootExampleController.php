@@ -10,9 +10,9 @@ class QueryBuilderBootExampleController extends Controller
 {
     public function __invoke()
     {
-        $queryBuilderBootExample = new \App\Models\QueryBuilderBootExample();
-        $queryBuilderBootExample->name = 'test';
-        $queryBuilderBootExample->save();
+        QueryBuilderBootExample::create([
+            'name' => 'test',
+        ]);
 
         DB::table('query_builder_boot_examples')->insert([
             'name' => 'test',

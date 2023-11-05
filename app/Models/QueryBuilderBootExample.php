@@ -9,6 +9,10 @@ class QueryBuilderBootExample extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+    ];
+
     protected static function boot()
     {
         parent::boot();
