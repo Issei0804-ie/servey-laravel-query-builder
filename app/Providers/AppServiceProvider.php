@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        DB::listen(static function (QueryExecuted $event) {
+            $sql = $event->connection
+                ->getQueryGrammar()
+                ->substituteBindingsIntoRawSql(
+                    sql: $event->sql,
+                    bindings: $event->connection->prepareBindings($event->bindings),
+                );
+
+            Log::debug(sprintf('%.2f ms, SQL: %s;', $event->time, $sql));
+        });
     }
 }
